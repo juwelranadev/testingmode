@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+  .animate-shimmer {
+    animation: shimmer 2s ease-in-out infinite;
+ }
+
+
+ @keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
+@keyframes color-cycle {
+  0% { color: #22d3ee; } /* cyan-400 */
+  20% { color: #a21caf; } /* purple-800 */
+  40% { color: #f59e42; } /* orange-400 */
+  60% { color: #22c55e; } /* green-500 */
+  80% { color: #f43f5e; } /* rose-500 */
+  100% { color: #22d3ee; }
+}
+.animate-notice-color {
+  animation: color-cycle 3s linear infinite;
+}

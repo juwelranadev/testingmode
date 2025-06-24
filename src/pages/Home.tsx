@@ -38,7 +38,11 @@ import RulesModal from '../components/modals/RulesModal';
 import SupportModal from '../components/modals/SupportModal';
 import UpdatesModal from '../components/modals/UpdatesModal';
 
- 
+declare global {
+  interface Window {
+    show_9486612?: () => Promise<void>;
+  }
+}
 
 interface Stats {
   totalAds: number;
@@ -99,14 +103,30 @@ function Home() {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showUpdatesModal, setShowUpdatesModal] = useState(false);
   
-  const [stats, setStats] = useState<Stats>({
-    totalAds: 4,
-    totalEarned: 0.004,
-    dailyAds: 4,
-    dailyEarnings: 0.004,
-    payable: 0.004,
-    siteVisits: 0
+  // Initialize stats from localStorage or start with zeros
+  const [stats, setStats] = useState<Stats>(() => {
+    const saved = localStorage.getItem('stats');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // fallback to zeros if parse fails
+      }
+    }
+    return {
+      totalAds: 0,
+      totalEarned: 0,
+      dailyAds: 0,
+      dailyEarnings: 0,
+      payable: 0,
+      siteVisits: 0
+    };
   });
+
+  // Store stats in localStorage whenever they change
+  useEffect(() => {
+    localStorage.setItem('stats', JSON.stringify(stats));
+  }, [stats]);
 
   const [airdropTasks, setAirdropTasks] = useState<AirdropTask[]>([]);
   const [airdropBalance, setAirdropBalance] = useState(205);
@@ -135,6 +155,9 @@ function Home() {
   const [isWatchingAd, setIsWatchingAd] = useState(false);
   const [isAutoAdsLoading, setIsAutoAdsLoading] = useState(false);
   const [isRewardsLoading, setIsRewardsLoading] = useState(false);
+
+  // Add state for countdowns for each button
+  const [offerCountdowns, setOfferCountdowns] = useState([0, 0, 0, 0]);
 
   // Load tasks from admin panel or localStorage
   useEffect(() => {
@@ -250,21 +273,34 @@ function Home() {
     }
   ];
 
+  // Auto Ads Effect: show rewarded ad, then wait 5s before next ad while autoAdsRunning is true
   useEffect(() => {
-    if (autoAdsRunning) {
-      const interval = setInterval(() => {
-        setStats(prev => ({
-          ...prev,
-          totalAds: prev.totalAds + 1,
-          dailyAds: prev.dailyAds + 1,
-          totalEarned: prev.totalEarned + 0.001,
-          dailyEarnings: prev.dailyEarnings + 0.001,
-          payable: prev.payable + 0.001
-        }));
-      }, 3000);
-
-      return () => clearInterval(interval);
+    let stopped = false;
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    async function runAutoAds() {
+      while (!stopped && autoAdsRunning) {
+        if (typeof window.show_9486612 === 'function') {
+          await window.show_9486612();
+          setStats(prev => ({
+            ...prev,
+            totalAds: prev.totalAds + 1,
+            dailyAds: prev.dailyAds + 1,
+            totalEarned: +(prev.totalEarned + 0.001).toFixed(3),
+            dailyEarnings: +(prev.dailyEarnings + 0.001).toFixed(3),
+            payable: +(prev.payable + 0.001).toFixed(3),
+          }));
+        }
+        // Wait 5 seconds before next ad
+        await new Promise(res => { timeout = setTimeout(res, 5000); });
+      }
     }
+    if (autoAdsRunning) {
+      runAutoAds();
+    }
+    return () => {
+      stopped = true;
+      if (timeout) clearTimeout(timeout);
+    };
   }, [autoAdsRunning]);
 
   const handleTaskComplete = (taskId: number) => {
@@ -302,17 +338,25 @@ function Home() {
 
   const watchAd = () => {
     setIsWatchingAd(true);
-    setTimeout(() => {
-      setStats(prev => ({
-        ...prev,
-        totalAds: prev.totalAds + 1,
-        dailyAds: prev.dailyAds + 1,
-        totalEarned: prev.totalEarned + 0.001,
-        dailyEarnings: prev.dailyEarnings + 0.001,
-        payable: prev.payable + 0.001
-      }));
-      setIsWatchingAd(false);
-    }, 1500);
+    if (typeof window.show_9486612 === 'function') {
+      window.show_9486612().then(() => {
+        setStats(prev => ({
+          ...prev,
+          totalAds: prev.totalAds + 1,
+          dailyAds: prev.dailyAds + 1,
+          totalEarned: +(prev.totalEarned + 0.001).toFixed(3),
+          dailyEarnings: +(prev.dailyEarnings + 0.001).toFixed(3),
+          payable: +(prev.payable + 0.001).toFixed(3),
+        }));
+        setIsWatchingAd(false);
+        alert('You have seen an ad!');
+      });
+    } else {
+      setTimeout(() => {
+        setIsWatchingAd(false);
+        alert('Ad SDK not loaded.');
+      }, 1500);
+    }
   };
 
   const handleNavClick = (itemId: string) => {
@@ -371,6 +415,34 @@ function Home() {
     if (rank <= 10) return '🏆';
     return '⭐';
   };
+
+  // Handler for SMART OFFER button click
+  const handleSmartOfferClick = (idx: number, url: string) => {
+    // Open the offer in a new tab
+    window.open(url, '_blank', 'noopener,noreferrer');
+    // Track site visit and reward
+    setStats(prev => ({
+      ...prev,
+      siteVisits: prev.siteVisits + 1,
+      totalEarned: +(prev.totalEarned + 0.001).toFixed(3),
+      dailyEarnings: +(prev.dailyEarnings + 0.001).toFixed(3),
+      payable: +(prev.payable + 0.001).toFixed(3),
+    }));
+    // Start countdown for this button
+    setOfferCountdowns(prev => {
+      const updated = [...prev];
+      updated[idx] = 30;
+      return updated;
+    });
+  };
+
+  // Effect to handle countdown timers
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setOfferCountdowns(prev => prev.map(time => (time > 0 ? time - 1 : 0)));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   if (showAirdrop) {
     return (
@@ -771,14 +843,14 @@ function Home() {
       {/* Main Content */}
       <div className="px-4 py-6 space-y-6 pb-32">
         {/* Logo Section */}
-        <div className="text-center space-y-4">
-          <div className="flex items-center justify-center gap-4">
-            <h2 className="text-4xl font-bold text-green-400">iTonzi</h2>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
             <div className="w-16 h-16 bg-orange-500 rounded-full flex items-center justify-center">
               <div className="w-12 h-12 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center">
                 <Coins className="w-6 h-6 text-white" />
               </div>
             </div>
+            <h2 className="text-4xl font-bold text-green-400">iTonzi</h2>
           </div>
           <p className="text-red-400 text-lg font-semibold">Supported by iTonziFinance</p>
         </div>
@@ -901,12 +973,19 @@ function Home() {
 
         {/* Monetag Direct Link Grid */}
         <div className="grid grid-cols-2 gap-4 my-6">
-          {[1,2,3,4].map((i) => (
+          {[
+            'https://otieu.com/4/9133535',
+            'https://otieu.com/4/9133536',
+            'https://otieu.com/4/9133537',
+            'https://otieu.com/4/9133532',
+          ].map((url, i) => (
             <button
               key={i}
-              className="w-full py-4 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg text-white font-bold text-lg shadow-md hover:from-green-300 hover:to-blue-400 transition-all duration-300 transform hover:scale-105"
+              className={`w-full py-4 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg text-white font-bold text-lg shadow-md transition-all duration-300 transform hover:scale-105 ${offerCountdowns[i] > 0 ? 'opacity-60 cursor-not-allowed' : 'hover:from-green-300 hover:to-blue-400'}`}
+              onClick={() => offerCountdowns[i] === 0 && handleSmartOfferClick(i, url)}
+              disabled={offerCountdowns[i] > 0}
             >
-              monetag DIRECT LINK
+              {offerCountdowns[i] > 0 ? `Wait ${offerCountdowns[i]}s` : 'SMART OFFER'}
             </button>
           ))}
         </div>

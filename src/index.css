@@ -31,3 +31,30 @@
 .animate-notice-color {
   animation: color-cycle 3s linear infinite;
 }
+
+/* Animated border for SMART OFFER button */
+@keyframes border-move {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-border-move {
+  background-size: 200% 200%;
+  animation: border-move 2s linear infinite;
+}
+
+/* Animated border for notice bar */
+@keyframes notice-border {
+  0% { border-color: #fb5607; }   /* orange */
+  25% { border-color: #ff006e; }  /* magenta/red */
+  50% { border-color: #ff4d00; }  /* deep orange */
+  75% { border-color: #ff006e; }
+  100% { border-color: #fb5607; }
+}
+.animate-notice-border {
+  animation: notice-border 1.5s linear infinite;
+}

@@ -264,6 +264,13 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) => {
                             ? 'bg-cyan-600 hover:bg-cyan-500 text-white'
                             : 'bg-gray-700 text-gray-500 cursor-not-allowed'
                         }`}
+                        onClick={
+                          method.id === 'telegram' && method.available
+                            ? () => window.open('https://t.me/zikrulislam84', '_blank', 'noopener,noreferrer')
+                            : method.id === 'email' && method.available
+                              ? () => window.open('mailto:itonzi.finance@gmail.com')
+                              : undefined
+                        }
                       >
                         {method.action}
                       </button>
@@ -483,7 +490,10 @@ const SupportModal: React.FC<SupportModalProps> = ({ isOpen, onClose }) => {
               <div className="bg-gray-800/50 rounded-lg p-4 border border-gray-700">
                 <h4 className="text-white font-bold mb-3">Join Our Community</h4>
                 <div className="space-y-2">
-                  <button className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2">
+                  <button 
+                    onClick={() => window.open('https://t.me/iTonziFinanceChannel', '_blank', 'noopener,noreferrer')}
+                    className="w-full bg-blue-600 hover:bg-blue-500 py-2 rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+                  >
                     <MessageCircle className="w-4 h-4" />
                     Telegram Community
                   </button>

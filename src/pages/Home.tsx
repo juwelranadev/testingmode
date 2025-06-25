@@ -1034,7 +1034,7 @@ function Home() {
   return (
     <div className="min-h-screen flex flex-col text-white relative overflow-hidden" style={{ backgroundImage: 'url(https://i.ibb.co/S49D48yj/34101037-rm251-mind-08-f.jpg)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       {/* Notice Bar with Marquee - absolutely fixed at top, above all */}
-      <div className="px-4 py-2 text-sm flex items-center fixed top-0 left-0 right-0 z-50 border-2 border-yellow-400 animate-notice-border" style={{ backgroundColor: '#000080' }}>
+      <div className="w-full py-2 text-sm flex items-center fixed top-0 left-0 right-0 z-50 border-2 border-yellow-400 animate-notice-border" style={{ backgroundColor: '#000080' }}>
         <span className="font-bold mr-2 z-10 animate-notice-color text-yellow-500">{t.notice}</span>
         <div className="flex-1 overflow-hidden">
           <div className="animate-marquee whitespace-nowrap min-w-max">

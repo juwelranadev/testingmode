@@ -8,24 +8,6 @@ import {
   Gift,
   Loader2,
   Bell,
-  Users,
-  Clock,
-  Coins,
-  Star,
-  Zap,
-  Crown,
-  ArrowLeft,
-  Copy,
-  Wallet,
-  ExternalLink,
-  Target,
-  Calendar,
-  TrendingUp,
-  Award,
-  MessageCircle,
-  Heart,
-  Check,
-  Share2,
   Globe
 } from 'lucide-react';
 import PaymentModal from '../FooterActionButtons/PaymentModal';
@@ -33,17 +15,13 @@ import HistoryModal from '../FooterActionButtons/HistoryModal';
 import LeaderboardModal from '../FooterActionButtons/LeaderboardModal';
 import RulesModal from '../FooterActionButtons/RulesModal';
 import SupportModal from '../FooterActionButtons/SupportModal';
-import UpdatesModal from '../FooterActionButtons/UpdatesModal';
+import UpdatesModal from '../Updates/components/UpdatesModal';
 import ReactCountryFlag from 'react-country-flag';
 // Import new airdrop components
 import { 
   AirdropModal, 
   AirdropTask, 
-  LeaderboardUser,
-  ReferralData,
-  getDefaultTasks, 
-  getDifficultyColor, 
-  getDifficultyIcon 
+  getDefaultTasks
 } from '../Airdrop';
 
 declare global {
@@ -271,14 +249,11 @@ const translations = {
 function Home() {
   const [activeTab, setActiveTab] = useState('home');
   const [showAirdrop, setShowAirdrop] = useState(false);
-  const [airdropTab, setAirdropTab] = useState('tasks');
   const [autoAdsRunning, setAutoAdsRunning] = useState(false);
   const [walletConnected, setWalletConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
+  const [, setWalletAddress] = useState('');
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [showLanguageSelector, setShowLanguageSelector] = useState(false);
-  const  userRank = 42
-  const userLevel = 3
   
   // Modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -316,27 +291,6 @@ function Home() {
   const [airdropTasks, setAirdropTasks] = useState<AirdropTask[]>([]);
   const [airdropBalance, setAirdropBalance] = useState(205);
 
-  const  referralData : ReferralData  = {
-    totalReferrals: 12,
-    activeReferrals: 8,
-    totalEarned: 2400,
-    referralCode: 'iTONZI2024',
-    referralLink: 'https://t.me/iTonziBot?start=iTONZI2024'
-  };
-
-  const leaderboard : LeaderboardUser[] = [
-    { id: 1, username: 'CryptoKing', coins: 15420, rank: 1, avatar: '👑', level: 8 },
-    { id: 2, username: 'TonMaster', coins: 12890, rank: 2, avatar: '🚀', level: 7 },
-    { id: 3, username: 'AirdropHunter', coins: 11250, rank: 3, avatar: '🎯', level: 6 },
-    { id: 4, username: 'DiamondHands', coins: 9870, rank: 4, avatar: '💎', level: 6 },
-    { id: 5, username: 'MoonWalker', coins: 8640, rank: 5, avatar: '🌙', level: 5 },
-    { id: 6, username: 'TokenCollector', coins: 7520, rank: 6, avatar: '🪙', level: 5 },
-    { id: 7, username: 'Web3Pioneer', coins: 6890, rank: 7, avatar: '🌐', level: 4 },
-    { id: 8, username: 'BlockchainBoss', coins: 6120, rank: 8, avatar: '⛓️', level: 4 },
-    { id: 9, username: 'DeFiDegen', coins: 5780, rank: 9, avatar: '🔥', level: 4 },
-    { id: 10, username: 'NFTCollector', coins: 5340, rank: 10, avatar: '🎨', level: 3 }
-  ]
-
   const [isWatchingAd, setIsWatchingAd] = useState(false);
   const [isAutoAdsLoading, setIsAutoAdsLoading] = useState(false);
   const [isRewardsLoading, setIsRewardsLoading] = useState(false);
@@ -354,17 +308,50 @@ function Home() {
       if (savedTasks) {
         try {
           const tasks = JSON.parse(savedTasks);
+          console.log('Loaded tasks from localStorage:', tasks);
           // Filter only active tasks for the main app
           const activeTasks = tasks.filter((task: AirdropTask) => task.isActive !== false);
+          console.log('Active tasks after filtering:', activeTasks);
           setAirdropTasks(activeTasks);
         } catch (error) {
           console.error('Error loading tasks:', error);
           setAirdropTasks(getDefaultTasks());
         }
       } else {
+        console.log('No saved tasks found, using default tasks');
         setAirdropTasks(getDefaultTasks());
       }
     };
+
+    // Force refresh tasks by clearing localStorage and using default tasks
+    const forceRefreshTasks = () => {
+      console.log('Force refreshing tasks...');
+      localStorage.removeItem('adminTasks');
+      localStorage.removeItem('airdropTasks');
+      const defaultTasks = getDefaultTasks();
+      console.log('Setting default tasks:', defaultTasks);
+      setAirdropTasks(defaultTasks);
+      // Save the default tasks to localStorage
+      localStorage.setItem('airdropTasks', JSON.stringify(defaultTasks));
+    };
+
+    // Check if we need to force refresh (if wallet connect task is missing)
+    const savedTasks = localStorage.getItem('adminTasks') || localStorage.getItem('airdropTasks');
+    if (savedTasks) {
+      try {
+        const tasks = JSON.parse(savedTasks);
+        const hasWalletTask = tasks.some((task: AirdropTask) => task.id === 7);
+        if (!hasWalletTask) {
+          console.log('Wallet connect task missing, forcing refresh...');
+          forceRefreshTasks();
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking tasks:', error);
+        forceRefreshTasks();
+        return;
+      }
+    }
 
     loadTasks();
 
@@ -461,34 +448,6 @@ function Home() {
     { id: 'support', label: t.support, icon: Headphones }
   ];
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return 'text-green-400 bg-green-400/20';
-      case 'medium': return 'text-yellow-400 bg-yellow-400/20';
-      case 'hard': return 'text-red-400 bg-red-400/20';
-      case 'legendary': return 'text-purple-400 bg-purple-400/20';
-      default: return 'text-gray-400 bg-gray-400/20';
-    }
-  };
-
-  const getDifficultyIcon = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return Star;
-      case 'medium': return Zap;
-      case 'hard': return Crown;
-      case 'legendary': return Award;
-      default: return Star;
-    }
-  };
-
-  const getRankIcon = (rank: number) => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
-    if (rank <= 10) return '🏆';
-    return '⭐';
-  };
-
   // Handler for SMART OFFER button click
   const handleSmartOfferClick = (idx: number, url: string) => {
     // Open the offer in a new tab
@@ -558,7 +517,7 @@ function Home() {
           
           {showLanguageSelector && (
             <div className="absolute top-full right-0 mt-2 bg-gray-800/95 backdrop-blur-sm border border-gray-600 rounded-lg shadow-xl z-50 min-w-[120px]">
-              {Object.entries(translations).map(([code, lang]) => (
+              {Object.entries(translations).map(([code]) => (
                 <button
                   key={code}
                   onClick={() => {

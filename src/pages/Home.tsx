@@ -10,12 +10,12 @@ import {
   Bell,
   Globe
 } from 'lucide-react';
-import PaymentModal from '../FooterActionButtons/PaymentModal';
-import HistoryModal from '../FooterActionButtons/HistoryModal';
-import LeaderboardModal from '../FooterActionButtons/LeaderboardModal';
-import RulesModal from '../FooterActionButtons/RulesModal';
-import SupportModal from '../FooterActionButtons/SupportModal';
-import UpdatesModal from '../Updates/components/UpdatesModal';
+import PaymentModal from '../FooterButton/Modals/PaymentModal';
+import HistoryModal from '../FooterButton/Modals/HistoryModal';
+import LeaderboardModal from '../FooterButton/Modals/LeaderboardModal';
+import RulesModal from '../FooterButton/Modals/RulesModal';
+import SupportModal from '../FooterButton/Modals/SupportModal';
+import UpdatesModal from '../Updates/Modals/UpdatesModal';
 import ReactCountryFlag from 'react-country-flag';
 // Import new airdrop components
 import { 

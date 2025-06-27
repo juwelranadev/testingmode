@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, History, Calendar, Filter, Search, TrendingUp, TrendingDown, Clock, CheckCircle, AlertCircle, Eye, Download, RefreshCw } from 'lucide-react';
+import { X, History, Search, TrendingUp, TrendingDown, Clock, CheckCircle, AlertCircle, Eye, Download, RefreshCw } from 'lucide-react';
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -20,7 +20,6 @@ interface ActivityRecord {
 const HistoryModal: React.FC<HistoryModalProps> = ({ isOpen, onClose }) => {
   const [activeFilter, setActiveFilter] = useState<'all' | 'earnings' | 'withdrawals' | 'tasks'>('all');
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedPeriod, setSelectedPeriod] = useState<'today' | 'week' | 'month' | 'all'>('week');
 
   const activityHistory: ActivityRecord[] = [
     {

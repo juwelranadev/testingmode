@@ -22,20 +22,20 @@ const UpdatesTab: React.FC<UpdatesTabProps> = ({ updates }) => {
 
   const getUpdateIcon = (type: string) => {
     switch (type) {
-      case 'feature': return <Star className="w-5 h-5 text-yellow-400" />;
-      case 'improvement': return <TrendingUp className="w-5 h-5 text-blue-400" />;
-      case 'bugfix': return <CheckCircle className="w-5 h-5 text-green-400" />;
-      case 'announcement': return <Zap className="w-5 h-5 text-purple-400" />;
-      case 'event': return <Gift className="w-5 h-5 text-pink-400" />;
-      default: return <Zap className="w-5 h-5 text-gray-400" />;
+      case 'feature': return <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 flex-shrink-0" />;
+      case 'improvement': return <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 flex-shrink-0" />;
+      case 'bugfix': return <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" />;
+      case 'announcement': return <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />;
+      case 'event': return <Gift className="w-4 h-4 sm:w-5 sm:h-5 text-pink-400 flex-shrink-0" />;
+      default: return <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400 flex-shrink-0" />;
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'new': return <Sparkles className="w-4 h-4 text-yellow-400" />;
-      case 'active': return <Clock className="w-4 h-4 text-blue-400" />;
-      case 'completed': return <CheckCircle className="w-4 h-4 text-green-400" />;
+      case 'new': return <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 flex-shrink-0" />;
+      case 'active': return <Clock className="w-3 h-3 sm:w-4 sm:h-4 text-blue-400 flex-shrink-0" />;
+      case 'completed': return <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-green-400 flex-shrink-0" />;
       default: return null;
     }
   };
@@ -43,9 +43,9 @@ const UpdatesTab: React.FC<UpdatesTabProps> = ({ updates }) => {
   const filteredUpdates = filter === 'all' ? updates : updates.filter(update => update.type === filter);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Filter */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1 sm:gap-2">
         {[
           { value: 'all', label: 'All', color: 'bg-gray-500/20 text-gray-300' },
           { value: 'feature', label: 'Features', color: 'bg-yellow-500/20 text-yellow-300' },
@@ -57,7 +57,7 @@ const UpdatesTab: React.FC<UpdatesTabProps> = ({ updates }) => {
           <button
             key={filterOption.value}
             onClick={() => setFilter(filterOption.value as any)}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
+            className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full text-xs sm:text-sm font-medium transition-all whitespace-nowrap ${
               filter === filterOption.value
                 ? filterOption.color + ' ring-2 ring-offset-2 ring-offset-gray-900 ring-current'
                 : 'bg-gray-700/50 text-gray-400 hover:bg-gray-600/50'
@@ -69,42 +69,42 @@ const UpdatesTab: React.FC<UpdatesTabProps> = ({ updates }) => {
       </div>
 
       {/* Updates List */}
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {filteredUpdates.map((update) => (
           <div
             key={update.id}
-            className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-gray-600/50 hover:border-purple-400/50 transition-all"
+            className="bg-white/5 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-gray-600/50 hover:border-purple-400/50 transition-all"
           >
-            <div className="flex items-start gap-3">
-              <div className="flex-shrink-0">
+            <div className="flex items-start gap-2 sm:gap-3">
+              <div className="flex-shrink-0 mt-0.5">
                 {getUpdateIcon(update.type)}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-bold text-white">{update.title}</h3>
+                <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-2">
+                  <h3 className="font-bold text-white text-sm sm:text-base break-words">{update.title}</h3>
                   {getStatusIcon(update.status)}
                   {update.version && (
-                    <span className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full">
+                    <span className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full whitespace-nowrap">
                       {update.version}
                     </span>
                   )}
                 </div>
-                <p className="text-gray-300 text-sm mb-3">{update.description}</p>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-400 text-xs">{update.date}</span>
-                    <div className="flex gap-1">
+                <p className="text-gray-300 text-xs sm:text-sm mb-3 break-words leading-relaxed">{update.description}</p>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0">
+                  <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                    <span className="text-gray-400 text-xs whitespace-nowrap">{update.date}</span>
+                    <div className="flex flex-wrap gap-1">
                       {update.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-2 py-1 bg-gray-700/50 text-gray-300 text-xs rounded-full"
+                          className="px-1.5 py-0.5 sm:px-2 sm:py-1 bg-gray-700/50 text-gray-300 text-xs rounded-full break-words"
                         >
                           {tag}
                         </span>
                       ))}
                     </div>
                   </div>
-                  <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                  <div className={`px-1.5 py-0.5 sm:px-2 sm:py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                     update.priority === 'high' ? 'bg-red-500/20 text-red-300' :
                     update.priority === 'medium' ? 'bg-yellow-500/20 text-yellow-300' :
                     'bg-green-500/20 text-green-300'

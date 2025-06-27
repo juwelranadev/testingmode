@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Trophy, Crown, Medal, Star, TrendingUp, Users, Calendar, Gift, Zap, Target, Award } from 'lucide-react';
+import { X, Trophy, Users, Calendar, Gift, Zap } from 'lucide-react';
 
 interface LeaderboardModalProps {
   isOpen: boolean;

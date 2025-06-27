@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { X, Zap, Bell, Target, Calendar } from 'lucide-react';
-import UpdatesTab from '../Modules/UpdatesTab';
-import AnnouncementsTab from '../Modules/AnnouncementsTab';
-import RoadmapTab from '../Modules/RoadmapTab';
-import ChangelogTab from '../Modules/ChangelogTab';
+import UpdatesTab from '../components/UpdatesTab';
+import AnnouncementsTab from '../components/AnnouncementsTab';
+import RoadmapTab from '../components/RoadmapTab';
+import ChangelogTab from '../components/ChangelogTab';
 import { updates, announcements, roadmapItems } from '../data/updatesData';
 
 interface UpdatesModalProps {

@@ -122,22 +122,18 @@ export const apiUtils = {
   },
 
   // Cache API responses
-  createApiCache = () => {
+  createApiCache() {
     const cache = new Map<string, { data: any; timestamp: number; ttl: number }>();
-    
     return {
       get: (key: string) => {
         const item = cache.get(key);
         if (!item) return null;
-        
         if (Date.now() - item.timestamp > item.ttl) {
           cache.delete(key);
           return null;
         }
-        
         return item.data;
       },
-      
       set: (key: string, data: any, ttl: number = 5 * 60 * 1000) => {
         cache.set(key, {
           data,
@@ -145,15 +141,12 @@ export const apiUtils = {
           ttl
         });
       },
-      
       delete: (key: string) => {
         cache.delete(key);
       },
-      
       clear: () => {
         cache.clear();
       },
-      
       has: (key: string) => {
         return cache.has(key);
       }

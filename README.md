@@ -1,377 +1,257 @@
-# iTonzi Admin Panel - API Services
+# iTonzi - Earn TON by Completing Tasks
 
-A comprehensive API service layer built with Axios for the iTonzi Admin Panel, providing type-safe API calls with advanced features like caching, retry logic, and React hooks.
+A full-stack web application that allows users to earn TON cryptocurrency by completing various tasks, watching ads, and referring friends.
 
 ## 🚀 Features
 
-- **Type-safe API calls** with TypeScript
-- **Automatic authentication** with JWT tokens
-- **Request/Response interceptors** for global error handling
-- **Built-in caching** with TTL support
-- **Retry logic** with exponential backoff
-- **React hooks** for easy integration
-- **File upload** with progress tracking
-- **Comprehensive error handling**
-- **Pagination support**
-- **Real-time data fetching**
+### Frontend (React + TypeScript + Vite)
+- **Modern UI/UX** with Tailwind CSS
+- **Responsive Design** for mobile and desktop
+- **Real-time Updates** with WebSocket support
+- **Task Management** with progress tracking
+- **Payment System** with TON wallet integration
+- **Referral System** with leaderboards
+- **Admin Panel** for task and user management
+- **Notification System** for real-time updates
+
+### Backend (Node.js + Express + TypeScript + MongoDB)
+- **RESTful API** with comprehensive endpoints
+- **JWT Authentication** with role-based access
+- **MongoDB Database** with Mongoose ODM
+- **Security Features** (Helmet, CORS, Rate Limiting)
+- **File Upload** support
+- **Comprehensive Logging** with Winston
+- **Input Validation** with express-validator
+- **Error Handling** with custom middleware
 
 ## 📁 Project Structure
 
 ```
-src/services/api/
-├── config.ts                 # Axios configuration and interceptors
-├── index.ts                  # Main exports and utilities
-├── types/
-│   └── index.ts             # TypeScript type definitions
-├── endpoints/
-│   ├── auth.ts              # Authentication API
-│   ├── users.ts             # User management API
-│   ├── tasks.ts             # Task management API
-│   ├── payments.ts          # Payment management API
-│   ├── analytics.ts         # Analytics and dashboard API
-│   ├── notifications.ts     # Notification management API
-│   ├── database.ts          # Database management API
-│   └── settings.ts          # System settings API
-└── hooks/
-    └── useApi.ts            # React hooks for API calls
+src/
+├── server/                    # Backend server
+│   ├── src/
+│   │   ├── config/           # Configuration files
+│   │   ├── controllers/      # Business logic
+│   │   ├── models/           # Mongoose schemas
+│   │   ├── routes/           # Express routes
+│   │   ├── middlewares/      # Custom middlewares
+│   │   ├── utils/            # Utility functions
+│   │   ├── services/         # Database services
+│   │   ├── app.ts            # Express app setup
+│   │   └── server.ts         # Entry point
+│   ├── package.json
+│   ├── tsconfig.json
+│   └── env.example
+├── src/                      # Frontend application
+│   ├── admin/               # Admin panel components
+│   ├── Airdrop/             # Airdrop features
+│   ├── FooterButton/        # Footer components
+│   ├── pages/               # Page components
+│   ├── services/            # API services
+│   └── Updates/             # Update components
+├── package.json
+└── README.md
 ```
 
-## 🛠 Installation
+## 🛠️ Tech Stack
 
-The API services are already configured in this project. Axios is installed as a dependency.
+### Frontend
+- **React 18** with TypeScript
+- **Vite** for fast development and building
+- **Tailwind CSS** for styling
+- **Lucide React** for icons
+- **Axios** for API communication
+- **React Router** for navigation
 
-## 📖 Usage
+### Backend
+- **Node.js** with TypeScript
+- **Express.js** web framework
+- **MongoDB** with Mongoose ODM
+- **JWT** for authentication
+- **bcryptjs** for password hashing
+- **Winston** for logging
+- **express-validator** for validation
+- **Helmet** for security headers
 
-### Basic API Usage
+## 🚀 Quick Start
 
-```typescript
-import { usersApi, authApi, apiUtils } from '@/services/api';
+### Prerequisites
+- Node.js (v16 or higher)
+- MongoDB (local or cloud)
+- npm or yarn
 
-// Get all users
-const users = await usersApi.getUsers({ page: 1, limit: 10 });
+### Installation
 
-// Create a new user
-const newUser = await usersApi.createUser({
-  name: 'John Doe',
-  email: 'john@example.com',
-  password: 'password123'
-});
-
-// Handle errors
-try {
-  const data = await usersApi.getUserById('123');
-} catch (error) {
-  const errorMessage = apiUtils.formatErrorMessage(error);
-  console.error(errorMessage);
-}
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd src
 ```
 
-### Using React Hooks
-
-```typescript
-import { useApi, useMutation } from '@/services/api/hooks/useApi';
-import { usersApi } from '@/services/api';
-
-// Query hook
-function UsersList() {
-  const { data: users, loading, error, refetch } = useApi(
-    () => usersApi.getUsers({ page: 1, limit: 10 }),
-    {
-      cache: true,
-      cacheKey: 'users-list',
-      retries: 3
-    }
-  );
-
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
-
-  return (
-    <div>
-      {users?.data.map(user => (
-        <div key={user.id}>{user.name}</div>
-      ))}
-      <button onClick={refetch}>Refresh</button>
-    </div>
-  );
-}
-
-// Mutation hook
-function CreateUser() {
-  const { mutate, loading, error } = useMutation(
-    (userData) => usersApi.createUser(userData),
-    {
-      onSuccess: (data) => {
-        console.log('User created:', data);
-      },
-      onError: (error) => {
-        console.error('Failed to create user:', error);
-      }
-    }
-  );
-
-  const handleSubmit = (formData) => {
-    mutate(formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      {/* form fields */}
-      <button type="submit" disabled={loading}>
-        {loading ? 'Creating...' : 'Create User'}
-      </button>
-    </form>
-  );
-}
+2. **Install all dependencies**
+```bash
+npm run install:all
 ```
 
-### Authentication
+3. **Set up environment variables**
+```bash
+# Copy backend environment file
+cp server/env.example server/.env
 
-```typescript
-import { authApi } from '@/services/api';
-
-// Login
-const loginResult = await authApi.login({
-  email: 'admin@itonzi.com',
-  password: 'password123'
-});
-
-// Check if user is authenticated
-const isAuthenticated = authApi.isAuthenticated();
-
-// Get current user
-const currentUser = authApi.getCurrentUser();
-
-// Logout
-await authApi.logout();
+# Edit server/.env with your configuration
 ```
 
-### File Upload with Progress
+4. **Start the development servers**
+```bash
+# Start both frontend and backend
+npm run dev:full
 
-```typescript
-import { apiUtils } from '@/services/api';
-
-const handleFileUpload = async (file: File) => {
-  try {
-    const result = await apiUtils.uploadFileWithProgress(
-      '/api/upload',
-      file,
-      (progress) => {
-        console.log(`Upload progress: ${progress}%`);
-      },
-      { category: 'avatar' }
-    );
-    console.log('Upload successful:', result);
-  } catch (error) {
-    console.error('Upload failed:', error);
-  }
-};
+# Or start them separately:
+npm run dev          # Frontend only
+npm run server:dev   # Backend only
 ```
-
-### Caching
-
-```typescript
-import { apiUtils } from '@/services/api';
-
-// Create a cache instance
-const cache = apiUtils.createApiCache();
-
-// Cache data
-cache.set('users', userData, 5 * 60 * 1000); // 5 minutes
-
-// Retrieve cached data
-const cachedUsers = cache.get('users');
-
-// Generate cache key
-const cacheKey = apiUtils.generateCacheKey('users', { page: 1, limit: 10 });
-```
-
-## 🔧 Configuration
 
 ### Environment Variables
 
-Create a `.env` file in your project root:
+Create a `.env` file in the `server/` directory:
 
 ```env
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_API_TIMEOUT=30000
+# Server Configuration
+PORT=5000
+NODE_ENV=development
+
+# MongoDB Configuration
+MONGODB_URI=mongodb://localhost:27017/itonzi
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_EXPIRES_IN=7d
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000
 ```
 
-### Custom Configuration
+## 📚 API Documentation
 
-```typescript
-import { apiClient } from '@/services/api';
+### Authentication Endpoints
+- `POST /api/auth/register` - User registration
+- `POST /api/auth/login` - User login
+- `GET /api/auth/me` - Get current user
+- `POST /api/auth/logout` - User logout
 
-// Set custom headers
-apiClient.defaults.headers.common['X-Custom-Header'] = 'value';
+### User Endpoints
+- `GET /api/users` - Get all users (admin)
+- `GET /api/users/:id` - Get user by ID
+- `PUT /api/users/:id` - Update user
+- `DELETE /api/users/:id` - Delete user (admin)
 
-// Set custom timeout
-apiClient.defaults.timeout = 60000;
+### Task Endpoints
+- `GET /api/tasks` - Get all tasks
+- `GET /api/tasks/:id` - Get task by ID
+- `POST /api/tasks` - Create task (admin)
+- `PUT /api/tasks/:id` - Update task (admin)
+- `DELETE /api/tasks/:id` - Delete task (admin)
+- `POST /api/tasks/:id/complete` - Complete task
 
-// Add request interceptor
-apiClient.interceptors.request.use((config) => {
-  // Custom logic here
-  return config;
-});
-```
+### Payment Endpoints
+- `GET /api/payments` - Get user payments
+- `POST /api/payments/withdraw` - Request withdrawal
+- `POST /api/payments/deposit` - Process deposit
 
-## 📚 API Endpoints
+### Admin Endpoints
+- `GET /api/admin/dashboard` - Get dashboard stats
+- `GET /api/admin/settings` - Get system settings
+- `PUT /api/admin/settings` - Update system settings
 
-### Authentication
-- `POST /auth/login` - User login
-- `POST /auth/register` - User registration
-- `POST /auth/logout` - User logout
-- `POST /auth/refresh` - Refresh access token
-- `GET /auth/profile` - Get user profile
-- `PUT /auth/profile` - Update user profile
+## 🗄️ Database Models
 
-### Users
-- `GET /users` - Get all users (paginated)
-- `GET /users/:id` - Get user by ID
-- `POST /users` - Create new user
-- `PUT /users/:id` - Update user
-- `DELETE /users/:id` - Delete user
-- `GET /users/search` - Search users
-- `GET /users/stats` - Get user statistics
+### User
+- Basic info (email, username, password)
+- Balance and earnings tracking
+- Referral system
+- Role-based permissions
 
-### Tasks
-- `GET /tasks` - Get all tasks (paginated)
-- `GET /tasks/:id` - Get task by ID
-- `POST /tasks` - Create new task
-- `PUT /tasks/:id` - Update task
-- `DELETE /tasks/:id` - Delete task
-- `PATCH /tasks/:id/status` - Change task status
-- `PATCH /tasks/:id/assign` - Assign task to user
+### Task
+- Task details and requirements
+- Reward amounts
+- Completion tracking
+- Categories and difficulty levels
 
-### Payments
-- `GET /payments` - Get all payments (paginated)
-- `GET /payments/:id` - Get payment by ID
-- `POST /payments` - Create new payment
-- `PUT /payments/:id` - Update payment
-- `DELETE /payments/:id` - Delete payment
-- `PATCH /payments/:id/status` - Change payment status
-- `POST /payments/:id/process` - Process payment
+### Payment
+- Transaction history
+- Withdrawal/deposit tracking
+- TON wallet integration
+- Status management
 
-### Analytics
-- `GET /analytics/dashboard` - Get dashboard statistics
-- `GET /analytics/data` - Get analytics data
-- `GET /analytics/user-growth` - Get user growth data
-- `GET /analytics/task-completion` - Get task completion data
-- `GET /analytics/revenue` - Get revenue data
-
-### Notifications
-- `GET /notifications` - Get all notifications (paginated)
-- `GET /notifications/:id` - Get notification by ID
-- `POST /notifications` - Create new notification
-- `PUT /notifications/:id` - Update notification
-- `DELETE /notifications/:id` - Delete notification
-- `PATCH /notifications/:id/read` - Mark as read
-
-### Database
-- `GET /database/tables` - Get all database tables
-- `GET /database/tables/:name` - Get table structure
-- `GET /database/tables/:name/data` - Get table data
-- `POST /database/query` - Execute custom query
-- `GET /database/backups` - Get all backups
-- `POST /database/backups` - Create backup
+### Notification
+- User notifications
+- System announcements
+- Real-time updates
 
 ### Settings
-- `GET /settings` - Get all settings
-- `GET /settings/:key` - Get setting by key
-- `PUT /settings/:key` - Update setting
-- `GET /settings/general` - Get general settings
-- `PUT /settings/general` - Update general settings
+- Application configuration
+- System parameters
+- Public/private settings
 
-## 🎯 Best Practices
+## 🔧 Development
 
-### Error Handling
+### Available Scripts
 
-```typescript
-import { apiUtils } from '@/services/api';
+**Frontend:**
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
 
-try {
-  const data = await apiCall();
-} catch (error) {
-  if (apiUtils.isAuthError(error)) {
-    // Handle authentication error
-    redirectToLogin();
-  } else if (apiUtils.isNetworkError(error)) {
-    // Handle network error
-    showNetworkError();
-  } else if (apiUtils.isServerError(error)) {
-    // Handle server error
-    showServerError();
-  } else {
-    // Handle other errors
-    const message = apiUtils.formatErrorMessage(error);
-    showError(message);
-  }
-}
-```
+**Backend:**
+- `npm run server:dev` - Start backend development server
+- `npm run server:build` - Build backend for production
+- `npm run server:start` - Start production backend
 
-### Retry Logic
+**Full Stack:**
+- `npm run dev:full` - Start both frontend and backend
+- `npm run install:all` - Install all dependencies
 
-```typescript
-import { apiUtils } from '@/services/api';
+### Code Structure
 
-// Retry API call with exponential backoff
-const data = await apiUtils.retryApiCall(
-  () => apiCall(),
-  3, // max retries
-  1000 // base delay in ms
-);
-```
+The application follows a modular architecture:
 
-### Debouncing API Calls
+- **Frontend**: Component-based with hooks and context
+- **Backend**: MVC pattern with service layer
+- **Database**: Mongoose schemas with validation
+- **API**: RESTful endpoints with JWT authentication
 
-```typescript
-import { apiUtils } from '@/services/api';
+## 🚀 Deployment
 
-const debouncedSearch = apiUtils.debounce(
-  (query) => searchApi.search(query),
-  300 // 300ms delay
-);
+### Frontend Deployment
+1. Build the application: `npm run build`
+2. Deploy the `dist/` folder to your hosting service
 
-// Use in input onChange
-<input onChange={(e) => debouncedSearch(e.target.value)} />
-```
+### Backend Deployment
+1. Build the backend: `npm run server:build`
+2. Set production environment variables
+3. Deploy to your server (Heroku, DigitalOcean, AWS, etc.)
 
-## 🔒 Security
+### Database Setup
+1. Set up MongoDB (local or cloud)
+2. Configure connection string in environment variables
+3. Run database migrations if needed
 
-- JWT tokens are automatically included in requests
-- Tokens are stored securely in localStorage
-- Automatic token refresh on 401 errors
-- CORS protection
-- Rate limiting support
+## 🤝 Contributing
 
-## 🧪 Testing
-
-```typescript
-import { apiClient } from '@/services/api';
-
-// Mock API responses for testing
-jest.mock('@/services/api', () => ({
-  usersApi: {
-    getUsers: jest.fn().mockResolvedValue({
-      data: mockUsers,
-      pagination: mockPagination
-    })
-  }
-}));
-```
-
-## 📝 Contributing
-
-1. Follow the existing code structure
-2. Add proper TypeScript types
-3. Include error handling
-4. Add JSDoc comments for complex functions
-5. Test your changes thoroughly
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
 ## 📄 License
 
 This project is licensed under the MIT License.
 
-## 🤝 Support
+## 🆘 Support
 
-For support and questions, please contact the development team or create an issue in the repository. 
+For support, email support@itonzi.com or create an issue in the repository.
+
+---
+
+**iTonzi** - Earn TON by completing tasks! 🚀 

@@ -20,6 +20,7 @@ import {
   CheckCircle,
   AlertTriangle
 } from 'lucide-react';
+import { tasksApi } from '../../services/api';
 
 interface Task {
   id: number;
@@ -59,6 +60,8 @@ const TaskManager: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<'all' | 'active' | 'inactive' | 'completed'>('all');
   const [filterDifficulty, setFilterDifficulty] = useState<'all' | 'easy' | 'medium' | 'hard' | 'legendary'>('all');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [newTask, setNewTask] = useState<Partial<Task>>({
     title: '',
@@ -147,191 +150,82 @@ const TaskManager: React.FC = () => {
     setFilteredTasks(filtered);
   }, [tasks, searchTerm, filterType, filterDifficulty]);
 
-  const loadTasks = () => {
-    // Load from localStorage or set default tasks
-    const savedTasks = localStorage.getItem('adminTasks');
-    if (savedTasks) {
-      setTasks(JSON.parse(savedTasks));
-    } else {
-      // Default tasks
-      const defaultTasks: Task[] = [
-        {
-          id: 1,
-          title: 'Join iTonzi Community',
-          description: 'Join our Telegram channel and become part of our growing community',
-          reward: 100,
-          completed: false,
-          type: 'social',
-          difficulty: 'easy',
-          category: 'Social Media',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completionCount: 1250,
-          requirements: ['Join Telegram channel', 'Verify membership'],
-          externalUrl: 'https://t.me/iTonziCommunity'
-        },
-        {
-          id: 2,
-          title: 'Daily Check-in Streak',
-          description: 'Check in daily for 7 consecutive days to earn bonus rewards',
-          reward: 50,
-          completed: false,
-          type: 'daily',
-          difficulty: 'easy',
-          category: 'Daily Tasks',
-          timeLimit: '24h',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completionCount: 890,
-          maxCompletions: 1000
-        },
-        {
-          id: 3,
-          title: 'Invite 5 Friends',
-          description: 'Share iTonzi with friends and earn massive rewards for each referral',
-          reward: 500,
-          completed: false,
-          type: 'referral',
-          difficulty: 'hard',
-          category: 'Referral Program',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completionCount: 340,
-          requirements: ['Share referral link', 'Friends must register', 'Friends must complete first task']
-        },
-        {
-          id: 4,
-          title: 'Watch 10 Ads Today',
-          description: 'Complete your daily ad viewing goal to unlock bonus coins',
-          reward: 25,
-          completed: false,
-          type: 'daily',
-          difficulty: 'medium',
-          category: 'Daily Tasks',
-          timeLimit: '24h',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completionCount: 567
-        },
-        {
-          id: 5,
-          title: 'Share on Social Media',
-          description: 'Post about iTonzi on your social media accounts',
-          reward: 75,
-          completed: false,
-          type: 'social',
-          difficulty: 'medium',
-          category: 'Social Media',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completionCount: 234
-        },
-        {
-          id: 6,
-          title: 'Complete Profile',
-          description: 'Fill out your complete profile information',
-          reward: 30,
-          completed: false,
-          type: 'daily',
-          difficulty: 'easy',
-          category: 'Profile Setup',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completionCount: 789
-        },
-        {
-          id: 7,
-          title: 'Connect Wallet',
-          description: 'Connect your TON wallet to secure your earnings',
-          reward: 200,
-          completed: false,
-          type: 'special',
-          difficulty: 'medium',
-          category: 'Wallet Integration',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          completionCount: 156
-        }
-      ];
-      setTasks(defaultTasks);
-      saveTasks(defaultTasks);
+  const loadTasks = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await tasksApi.getTasks();
+      setTasks(response.items || response.data || []);
+    } catch (err) {
+      setError('Failed to load tasks');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const saveTasks = (tasksToSave: Task[]) => {
-    localStorage.setItem('adminTasks', JSON.stringify(tasksToSave));
-    // Also sync with main app
-    localStorage.setItem('airdropTasks', JSON.stringify(tasksToSave));
-  };
-
-  const handleCreateTask = () => {
+  const handleCreateTask = async () => {
     if (!newTask.title || !newTask.description || !newTask.reward) {
       alert('Please fill in all required fields');
       return;
     }
-
-    const task: Task = {
-      id: Date.now(),
-      title: newTask.title!,
-      description: newTask.description!,
-      reward: newTask.reward!,
-      completed: false,
-      type: newTask.type as any,
-      difficulty: newTask.difficulty as any,
-      category: newTask.category!,
-      timeLimit: newTask.timeLimit,
-      isActive: newTask.isActive!,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      completionCount: 0,
-      requirements: newTask.requirements || [],
-      externalUrl: newTask.externalUrl
-    };
-
-    const updatedTasks = [...tasks, task];
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
-    setShowCreateModal(false);
-    resetNewTask();
-  };
-
-  const handleEditTask = () => {
-    if (!selectedTask) return;
-
-    const updatedTasks = tasks.map(task => 
-      task.id === selectedTask.id 
-        ? { ...selectedTask, updatedAt: new Date().toISOString() }
-        : task
-    );
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
-    setShowEditModal(false);
-    setSelectedTask(null);
-  };
-
-  const handleDeleteTask = (taskId: number) => {
-    if (confirm('Are you sure you want to delete this task?')) {
-      const updatedTasks = tasks.filter(task => task.id !== taskId);
-      setTasks(updatedTasks);
-      saveTasks(updatedTasks);
+    setLoading(true);
+    setError(null);
+    try {
+      await tasksApi.createTask(newTask as any);
+      setShowCreateModal(false);
+      resetNewTask();
+      await loadTasks();
+    } catch (err) {
+      setError('Failed to create task');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleToggleActive = (taskId: number) => {
-    const updatedTasks = tasks.map(task => 
-      task.id === taskId 
-        ? { ...task, isActive: !task.isActive, updatedAt: new Date().toISOString() }
-        : task
-    );
-    setTasks(updatedTasks);
-    saveTasks(updatedTasks);
+  const handleEditTask = async () => {
+    if (!selectedTask) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await tasksApi.updateTask(selectedTask.id.toString(), selectedTask as any);
+      setShowEditModal(false);
+      setSelectedTask(null);
+      await loadTasks();
+    } catch (err) {
+      setError('Failed to update task');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteTask = async (taskId: number) => {
+    if (confirm('Are you sure you want to delete this task?')) {
+      setLoading(true);
+      setError(null);
+      try {
+        await tasksApi.deleteTask(taskId.toString());
+        await loadTasks();
+      } catch (err) {
+        setError('Failed to delete task');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleToggleActive = async (taskId: number) => {
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    setLoading(true);
+    setError(null);
+    try {
+      await tasksApi.updateTask(taskId.toString(), { isActive: !task.isActive });
+      await loadTasks();
+    } catch (err) {
+      setError('Failed to update task status');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleDuplicateTask = (task: Task) => {
@@ -345,7 +239,6 @@ const TaskManager: React.FC = () => {
     };
     const updatedTasks = [...tasks, duplicatedTask];
     setTasks(updatedTasks);
-    saveTasks(updatedTasks);
   };
 
   const resetNewTask = () => {
@@ -961,6 +854,10 @@ const TaskManager: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Loading/Error UI */}
+      {loading && <div className="text-center text-gray-400">Loading tasks...</div>}
+      {error && <div className="text-center text-red-400">{error}</div>}
     </div>
   );
 };

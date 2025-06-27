@@ -23,6 +23,7 @@ import {
   AirdropTask, 
   getDefaultTasks
 } from '../Airdrop';
+import { tasksApi } from '../services/api';
 
 declare global {
   interface Window {
@@ -301,69 +302,45 @@ function Home() {
   // Get current translations
   const t = translations[currentLanguage as keyof typeof translations];
 
-  // Load tasks from admin panel or localStorage
+  // Load tasks from backend
   useEffect(() => {
-    const loadTasks = () => {
-      const savedTasks = localStorage.getItem('adminTasks') || localStorage.getItem('airdropTasks');
-      if (savedTasks) {
-        try {
-          const tasks = JSON.parse(savedTasks);
-          console.log('Loaded tasks from localStorage:', tasks);
-          // Filter only active tasks for the main app
-          const activeTasks = tasks.filter((task: AirdropTask) => task.isActive !== false);
-          console.log('Active tasks after filtering:', activeTasks);
-          setAirdropTasks(activeTasks);
-        } catch (error) {
-          console.error('Error loading tasks:', error);
-          setAirdropTasks(getDefaultTasks());
-        }
-      } else {
-        console.log('No saved tasks found, using default tasks');
+    const loadTasks = async () => {
+      try {
+        // Fetch backend tasks
+        const response = await tasksApi.getTasks();
+        const backendTasks = (response.items || response.data || []).map((task: any) => ({
+          // Map backend Task to AirdropTask structure, fallback to defaults if missing
+          id: Number(task.id),
+          title: task.title,
+          description: task.description,
+          reward: task.reward ?? 0,
+          completed: task.status === 'completed',
+          type: task.type ?? 'daily',
+          difficulty: task.difficulty ?? 'easy',
+          category: task.category ?? 'General',
+          timeLimit: task.timeLimit,
+          isActive: task.isActive !== false,
+          requirements: task.requirements ?? [],
+          externalUrl: task.externalUrl,
+          createdAt: task.createdAt,
+          updatedAt: task.updatedAt,
+          completionCount: task.completionCount ?? 0,
+          maxCompletions: task.maxCompletions
+        }));
+        // Merge backend tasks with default tasks (avoid duplicates by id)
+        const defaultTasks = getDefaultTasks();
+        const mergedTasks = [
+          ...defaultTasks.filter(dt => !backendTasks.some(bt => bt.id === dt.id)),
+          ...backendTasks
+        ];
+        // Only show active tasks
+        setAirdropTasks(mergedTasks.filter(task => task.isActive !== false));
+      } catch (error) {
+        // On error, fallback to default tasks
         setAirdropTasks(getDefaultTasks());
       }
     };
-
-    // Force refresh tasks by clearing localStorage and using default tasks
-    const forceRefreshTasks = () => {
-      console.log('Force refreshing tasks...');
-      localStorage.removeItem('adminTasks');
-      localStorage.removeItem('airdropTasks');
-      const defaultTasks = getDefaultTasks();
-      console.log('Setting default tasks:', defaultTasks);
-      setAirdropTasks(defaultTasks);
-      // Save the default tasks to localStorage
-      localStorage.setItem('airdropTasks', JSON.stringify(defaultTasks));
-    };
-
-    // Check if we need to force refresh (if wallet connect task is missing)
-    const savedTasks = localStorage.getItem('adminTasks') || localStorage.getItem('airdropTasks');
-    if (savedTasks) {
-      try {
-        const tasks = JSON.parse(savedTasks);
-        const hasWalletTask = tasks.some((task: AirdropTask) => task.id === 7);
-        if (!hasWalletTask) {
-          console.log('Wallet connect task missing, forcing refresh...');
-          forceRefreshTasks();
-          return;
-        }
-      } catch (error) {
-        console.error('Error checking tasks:', error);
-        forceRefreshTasks();
-        return;
-      }
-    }
-
     loadTasks();
-
-    // Listen for task updates from admin panel
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'adminTasks' || e.key === 'airdropTasks') {
-        loadTasks();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Auto Ads Effect: show rewarded ad, then wait 5s before next ad while autoAdsRunning is true

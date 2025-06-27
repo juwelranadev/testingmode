@@ -1,16 +1,16 @@
 // Main API service exports
-export { api, apiClient } from './config';
+export { api } from './config';
 export type { ApiResponse } from './config';
 
 // Export all API services
-export { authApi } from './endpoints/auth';
-export { usersApi } from './endpoints/users';
-export { tasksApi } from './endpoints/tasks';
-export { paymentsApi } from './endpoints/payments';
-export { analyticsApi } from './endpoints/analytics';
-export { notificationsApi } from './endpoints/notifications';
-export { databaseApi } from './endpoints/database';
-export { settingsApi } from './endpoints/settings';
+import { authApi } from './endpoints/auth';
+import { usersApi } from './endpoints/users';
+import { tasksApi } from './endpoints/tasks';
+import { paymentsApi } from './endpoints/payments';
+import { analyticsApi } from './endpoints/analytics';
+import { notificationsApi } from './endpoints/notifications';
+import { databaseApi } from './endpoints/database';
+import { settingsApi } from './endpoints/settings';
 
 // Export all types
 export * from './types';
@@ -227,4 +227,6 @@ export default {
   database: databaseApi,
   settings: settingsApi,
   utils: apiUtils
-}; 
+};
+
+export { authApi, usersApi, tasksApi, paymentsApi, analyticsApi, notificationsApi, databaseApi, settingsApi }; 
